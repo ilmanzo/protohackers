@@ -49,9 +49,10 @@ func handleConnection(conn net.Conn) {
 		fmt.Println("Error serializing json: ", err)
 		return
 	}
-	resp = append(resp, '\n')
+
 	fmt.Println("Sending: ", string(resp))
 	conn.Write(resp)
+	conn.Write([]byte("\n"))
 }
 
 func isPrime(n int) bool {
