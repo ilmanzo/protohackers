@@ -10,8 +10,8 @@ import (
 )
 
 type Request struct {
-	Method *string `json:"method"`
-	Number *int    `json:"number"`
+	Method *string  `json:"method"`
+	Number *float64 `json:"number"`
 }
 
 type Response struct {
@@ -40,21 +40,11 @@ func handleConnection(conn net.Conn) {
 	buf := bufio.NewReader(conn)
 	for {
 		bytes, err := buf.ReadBytes('\n')
-
 		if err != nil {
 			fmt.Println(fmt.Errorf("could not read data: %w", err))
 			break
 		}
-		var req Request
-		json.Unmarshal(bytes, &req)
-		fmt.Println("Received:", string(bytes))
-		var response Response
-		if req.Method == nil || req.Number == nil || *req.Method != "isPrime" {
-			// generate invalid response
-			response = Response{"invalid", false}
-		} else {
-			response = Response{"isPrime", isPrime(*req.Number)}
-		}
+		response := verifyRequest(bytes)
 		resp, err := json.Marshal(response)
 		if err != nil {
 			fmt.Println("Error serializing json: ", err)
@@ -66,17 +56,28 @@ func handleConnection(conn net.Conn) {
 	}
 }
 
-func isPrime(n int) bool {
-	if n <= 1 {
+func verifyRequest(data []byte) Response {
+	var req Request
+	fmt.Println("Received:", string(data))
+	err := json.Unmarshal(data, &req)
+	if err != nil || req.Method == nil || req.Number == nil || *req.Method != "isPrime" {
+		return Response{"invalid", false}
+	}
+	return Response{"isPrime", isPrime(*req.Number)}
+}
+
+func isPrime(n float64) bool {
+	intn := int(n)
+	if intn <= 1 {
 		return false
-	} else if n == 2 {
+	} else if intn == 2 {
 		return true
-	} else if n%2 == 0 {
+	} else if intn%2 == 0 {
 		return false
 	}
 	sqrt := int(math.Sqrt(float64(n)))
 	for i := 3; i <= sqrt; i += 2 {
-		if n%i == 0 {
+		if intn%i == 0 {
 			return false
 		}
 	}
