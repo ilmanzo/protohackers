@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"math"
 	"net"
 	"os"
 )
@@ -46,15 +47,15 @@ func handleConnection(conn net.Conn) {
 		}
 		var req Request
 		json.Unmarshal(bytes, &req)
-		//fmt.Println("Received:", string(bytes))
+		fmt.Println("Received:", string(bytes))
 		resp, err := json.Marshal(Response{"isPrime", isPrime(req.Number)})
 		if err != nil {
 			fmt.Println("Error serializing json: ", err)
 			continue
 		}
-		//fmt.Println("Sending:", string(resp))
 		resp = append(resp, '\n')
 		conn.Write(resp)
+		fmt.Println("Sending:", string(resp))
 	}
 }
 
@@ -65,7 +66,8 @@ func isPrime(n int) bool {
 	if n == 2 || n == 3 || n == 5 {
 		return true
 	}
-	for i := 7; i < n; i += 2 {
+	sqr := int(math.Sqrt(float64(n)))
+	for i := 7; i < sqr; i += 2 {
 		if n%i == 0 {
 			return false
 		}
