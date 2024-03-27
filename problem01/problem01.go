@@ -49,6 +49,7 @@ func handleConnection(conn net.Conn) {
 		fmt.Println("Error serializing json: ", err)
 		return
 	}
+	fmt.Println(string(r))
 	conn.Write(r)
 }
 
