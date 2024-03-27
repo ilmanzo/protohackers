@@ -67,7 +67,7 @@ func isPrime(n int) bool {
 		return true
 	}
 	sqr := int(math.Sqrt(float64(n)))
-	for i := 7; i < sqr; i += 2 {
+	for i := 7; i <= sqr; i += 2 {
 		if n%i == 0 {
 			return false
 		}
