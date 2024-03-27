@@ -1,6 +1,7 @@
 package problem01
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"net"
@@ -35,24 +36,26 @@ func Run(listenaddress string) {
 
 func handleConnection(conn net.Conn) {
 	defer conn.Close()
-	buffer := make([]byte, 1024)
-	n, err := conn.Read(buffer)
-	if err != nil {
-		fmt.Println("Error reading: ", err)
-		return
-	}
-	var req Request
-	json.Unmarshal(buffer[:n], &req)
-	fmt.Println("Received:", string(buffer[:n]))
-	resp, err := json.Marshal(Response{"isPrime", isPrime(req.Number)})
-	if err != nil {
-		fmt.Println("Error serializing json: ", err)
-		return
-	}
+	buf := bufio.NewReader(conn)
+	for {
+		bytes, err := buf.ReadBytes('\n')
 
-	fmt.Println("Sending:", string(resp))
-	conn.Write(resp)
-	conn.Write([]byte("\n"))
+		if err != nil {
+			fmt.Println(fmt.Errorf("could not read data: %w", err))
+			break
+		}
+		var req Request
+		json.Unmarshal(bytes, &req)
+		fmt.Println("Received:", string(bytes))
+		resp, err := json.Marshal(Response{"isPrime", isPrime(req.Number)})
+		if err != nil {
+			fmt.Println("Error serializing json: ", err)
+			continue
+		}
+		fmt.Println("Sending:", string(resp))
+		resp = append(resp, '\n')
+		conn.Write(resp)
+	}
 }
 
 func isPrime(n int) bool {
