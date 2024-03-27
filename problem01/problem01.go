@@ -10,8 +10,8 @@ import (
 )
 
 type Request struct {
-	Method string `json:"method"`
-	Number int    `json:"number"`
+	Method *string `json:"method"`
+	Number *int    `json:"number"`
 }
 
 type Response struct {
@@ -48,7 +48,14 @@ func handleConnection(conn net.Conn) {
 		var req Request
 		json.Unmarshal(bytes, &req)
 		fmt.Println("Received:", string(bytes))
-		resp, err := json.Marshal(Response{"isPrime", isPrime(req.Number)})
+		var response Response
+		if req.Method == nil || req.Number == nil || *req.Method != "isPrime" {
+			// generate invalid response
+			response = Response{"invalid", false}
+		} else {
+			response = Response{"isPrime", isPrime(*req.Number)}
+		}
+		resp, err := json.Marshal(response)
 		if err != nil {
 			fmt.Println("Error serializing json: ", err)
 			continue
