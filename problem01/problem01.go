@@ -60,7 +60,7 @@ func handleConnection(conn net.Conn) {
 }
 
 func isPrime(n int) bool {
-	if n <= 1 || n == 4 || n == 6 {
+	if n <= 1 || n%2 == 0 {
 		return false
 	}
 	if n == 2 || n == 3 || n == 5 {
