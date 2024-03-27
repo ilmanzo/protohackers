@@ -1,4 +1,4 @@
-package main
+package problem00
 
 import (
 	"bufio"
@@ -8,8 +8,8 @@ import (
 	"os"
 )
 
-func main() {
-	listener, err := net.Listen("tcp", "0.0.0.0:4242")
+func Run(listenaddress string) {
+	listener, err := net.Listen("tcp", listenaddress)
 	if err != nil {
 		fmt.Println("unable to create listener: ", err)
 		os.Exit(1)
