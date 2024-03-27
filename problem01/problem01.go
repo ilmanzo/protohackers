@@ -44,13 +44,13 @@ func handleConnection(conn net.Conn) {
 	var req Request
 	json.Unmarshal(buffer[:n], &req)
 	fmt.Println("Received: ", string(buffer[:n]))
-	resp, err := json.Marshal(Response{Method: "isPrime", Prime: isPrime(req.Number)})
+	resp, err := json.Marshal(Response{"isPrime", isPrime(req.Number)})
 	if err != nil {
 		fmt.Println("Error serializing json: ", err)
 		return
 	}
+	resp = append(resp, '\n')
 	fmt.Println("Sending: ", string(resp))
-	resp = append(resp, byte('\n'))
 	conn.Write(resp)
 }
 
