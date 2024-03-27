@@ -52,7 +52,7 @@ func handleConnection(conn net.Conn) {
 	}
 	fmt.Println("Sending: ", string(r))
 	conn.Write(r)
-	conn.Write([]byte("\n"))
+	conn.Write([]byte{10})
 }
 
 func isPrime(n int) bool {
