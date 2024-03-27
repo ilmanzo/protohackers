@@ -60,11 +60,11 @@ func handleConnection(conn net.Conn) {
 }
 
 func isPrime(n int) bool {
-	if n <= 1 || n%2 == 0 {
-		return false
-	}
 	if n == 2 || n == 3 || n == 5 {
 		return true
+	}
+	if n <= 1 || n%2 == 0 {
+		return false
 	}
 	sqr := int(math.Sqrt(float64(n)))
 	for i := 7; i <= sqr; i += 2 {
