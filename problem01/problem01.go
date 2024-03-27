@@ -7,9 +7,13 @@ import (
 	"os"
 )
 
-type Message struct {
+type Request struct {
 	Method string `json:"method"`
 	Number int    `json:"number"`
+}
+
+type Response struct {
+	Method string `json:"method"`
 	Prime  bool   `json:"prime"`
 }
 
@@ -37,20 +41,25 @@ func handleConnection(conn net.Conn) {
 		fmt.Println("Error reading: ", err)
 		return
 	}
-	var m Message
-	json.Unmarshal(buffer[:n], &m)
-	m.Prime = isPrime(m.Number)
-	resp, err := json.Marshal(m)
+	var req Request
+	json.Unmarshal(buffer[:n], &req)
+	resp := Response{Method: "isPrime", Prime: isPrime(req.Number)}
+	r, err := json.Marshal(resp)
 	if err != nil {
 		fmt.Println("Error serializing json: ", err)
 		return
 	}
-	conn.Write(resp)
+	conn.Write(r)
 }
 
 func isPrime(n int) bool {
-	if n == 1 || n == 2 || n == 3 {
-		return true
+	if n <= 1 {
+		return false
 	}
-	return false
+	for i := 2; i < n; i++ {
+		if n%i == 0 {
+			return false
+		}
+	}
+	return true
 }
