@@ -3,21 +3,23 @@ package main
 import (
 	"flag"
 	"fmt"
+	"os"
 	"protohackers/problem00"
 	"protohackers/problem01"
+	"protohackers/problem02"
 )
 
+const LISTENADDRESS string = "0.0.0.0:4242"
+
 func main() {
-	problem := flag.Int("problem", 0, "the problem to run")
-	listenaddress := "0.0.0.0:4242"
+	problems := []func(string){problem00.Run, problem01.Run, problem02.Run}
+	problem := flag.Int("problem", -1, "the problem to run")
 	flag.Parse()
-	fmt.Printf("Running problem %v, listening on %v\n", *problem, listenaddress)
-	switch *problem {
-	case 0:
-		problem00.Run(listenaddress)
-	case 1:
-		problem01.Run(listenaddress)
-	default:
-		fmt.Println("Not yet implemented")
+	if *problem < 0 || *problem > (len(problems)-1) {
+		fmt.Println("You want problem = ", *problem)
+		fmt.Println("Please specify a problem between 0 and", len(problems)-1)
+		os.Exit(1)
 	}
+	fmt.Printf("Running problem %v, listening on %v\n", *problem, LISTENADDRESS)
+	problems[*problem](LISTENADDRESS)
 }
