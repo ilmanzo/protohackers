@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"protohackers/utils"
 )
 
 type PriceItem struct {
@@ -12,7 +13,19 @@ type PriceItem struct {
 	price     int32
 }
 
-func HandleConnection(conn net.Conn) {
+func Run() {
+	listener := utils.NewTCPListener(utils.TCP_LISTENADDRESS)
+	for {
+		conn, err := listener.Accept()
+		if err != nil {
+			fmt.Println("unable to accept connection: ", err)
+			continue
+		}
+		go handleConnection(conn)
+	}
+}
+
+func handleConnection(conn net.Conn) {
 	defer conn.Close()
 	var pricehistory []PriceItem
 	in_msgbuf := make([]byte, 9)

@@ -2,11 +2,26 @@ package problem00
 
 import (
 	"bufio"
+	"fmt"
 	"io"
 	"net"
+	"protohackers/utils"
 )
 
-func HandleConnection(conn net.Conn) {
+func Run() {
+	listener := utils.NewTCPListener(utils.TCP_LISTENADDRESS)
+	for {
+		conn, err := listener.Accept()
+		if err != nil {
+			fmt.Println("unable to accept connection: ", err)
+			continue
+		}
+		go handleConnection(conn)
+	}
+
+}
+
+func handleConnection(conn net.Conn) {
 	defer conn.Close()
 	reader := bufio.NewReader(conn)
 	writer := bufio.NewWriter(conn)
@@ -26,5 +41,3 @@ Once the client has finished sending data to you it shuts down its sending side.
 
 Your program will implement the TCP Echo Service from RFC 862.
 */
-
-

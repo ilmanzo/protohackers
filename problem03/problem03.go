@@ -1,8 +1,29 @@
 package problem03
 
-import "net"
+import (
+	"fmt"
+	"net"
+	"protohackers/utils"
+)
 
-func HandleConnection(conn net.Conn) {
+func Run() {
+	listener := utils.NewTCPListener(utils.TCP_LISTENADDRESS)
+	for {
+		conn, err := listener.Accept()
+		if err != nil {
+			fmt.Println("unable to accept connection: ", err)
+			continue
+		}
+		go handleConnection(conn)
+	}
+}
+
+func handleConnection(conn net.Conn) {
+	defer conn.Close()
+	msg := "Welcome to budgetchat! What shall I call you?\n"
+	if _, err := conn.Write([]byte(msg)); err != nil {
+		fmt.Printf("Cannot send to client, error %v\n", err)
+	}
 
 }
 

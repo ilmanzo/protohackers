@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math"
 	"net"
+	"protohackers/utils"
 )
 
 type Request struct {
@@ -18,7 +19,19 @@ type Response struct {
 	Prime  bool   `json:"prime"`
 }
 
-func HandleConnection(conn net.Conn) {
+func Run() {
+	listener := utils.NewTCPListener(utils.TCP_LISTENADDRESS)
+	for {
+		conn, err := listener.Accept()
+		if err != nil {
+			fmt.Println("unable to accept connection: ", err)
+			continue
+		}
+		go handleConnection(conn)
+	}
+}
+
+func handleConnection(conn net.Conn) {
 	defer conn.Close()
 	buf := bufio.NewReader(conn)
 	for {
