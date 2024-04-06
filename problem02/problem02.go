@@ -14,7 +14,7 @@ type PriceItem struct {
 }
 
 func Run() {
-	listener := utils.NewTCPListener(utils.TCP_LISTENADDRESS)
+	listener := utils.NewTCPListener(utils.LISTENADDRESS)
 	for {
 		conn, err := listener.Accept()
 		if err != nil {

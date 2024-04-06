@@ -9,7 +9,6 @@ import (
 	"protohackers/problem02"
 	"protohackers/problem03"
 	"protohackers/problem04"
-	"protohackers/utils"
 )
 
 func main() {
@@ -26,6 +25,6 @@ func main() {
 		fmt.Println("Please specify a problem between 0 and", len(problems)-1)
 		os.Exit(1)
 	}
-	fmt.Printf("Running problem %v, listening on %v\n", *problem, utils.TCP_LISTENADDRESS)
+	fmt.Printf("Running problem %v\n", *problem)
 	problems[*problem]()
 }

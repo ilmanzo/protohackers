@@ -1,7 +1,6 @@
 package problem00
 
 import (
-	"bufio"
 	"fmt"
 	"io"
 	"net"
@@ -9,7 +8,7 @@ import (
 )
 
 func Run() {
-	listener := utils.NewTCPListener(utils.TCP_LISTENADDRESS)
+	listener := utils.NewTCPListener(utils.LISTENADDRESS)
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
@@ -23,9 +22,7 @@ func Run() {
 
 func handleConnection(conn net.Conn) {
 	defer conn.Close()
-	reader := bufio.NewReader(conn)
-	writer := bufio.NewWriter(conn)
-	io.Copy(writer, reader)
+	io.Copy(conn, conn)
 }
 
 /*
