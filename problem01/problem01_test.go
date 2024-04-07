@@ -1,4 +1,4 @@
-package problem00
+package problem01
 
 import (
 	"net"
@@ -8,27 +8,27 @@ import (
 
 func TestServer(t *testing.T) {
 	// Start the server
-	server, err := utils.NewTCPServer(utils.LISTENADDRESS, handleConnection)
+	server, err := utils.NewTCPServer(utils.LISTENADDRESS, handleConnection01)
 	if err != nil {
 		t.Fatal(err)
 	}
 	server.Start()
 	defer server.Stop()
-	// Connect to the server and send a message
 	conn, err := net.Dial("tcp", utils.LISTENADDRESS)
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer conn.Close()
-	msg := "Testing the echo server!\n"
-	actual := make([]byte, len(msg))
-	if _, err := conn.Write([]byte(msg)); err != nil {
+	request := `{"method":"isPrime","number":123}`
+	expected := `{"method":"isPrime","prime":false}`
+	actual := make([]byte, 1024)
+	if _, err := conn.Write([]byte(request)); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := conn.Read(actual); err != nil {
 		t.Fatal(err)
 	}
-	if string(actual) != msg {
-		t.Errorf("expected %q, but got %q", msg, actual)
+	if string(actual) != expected {
+		t.Errorf("expected %q, but got %q", expected, actual)
 	}
 }

@@ -14,15 +14,13 @@ type PriceItem struct {
 }
 
 func Run() {
-	listener := utils.NewTCPListener(utils.LISTENADDRESS)
-	for {
-		conn, err := listener.Accept()
-		if err != nil {
-			fmt.Println("unable to accept connection: ", err)
-			continue
-		}
-		go handleConnection(conn)
+	server, err := utils.NewTCPServer(utils.LISTENADDRESS, handleConnection)
+	if err != nil {
+		fmt.Println("error starting server: ", err)
+		return
 	}
+	server.Start()
+	server.Stop()
 }
 
 func handleConnection(conn net.Conn) {

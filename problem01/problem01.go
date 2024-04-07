@@ -6,7 +6,10 @@ import (
 	"fmt"
 	"math"
 	"net"
+	"os"
+	"os/signal"
 	"protohackers/utils"
+	"syscall"
 )
 
 type Request struct {
@@ -20,18 +23,23 @@ type Response struct {
 }
 
 func Run() {
-	listener := utils.NewTCPListener(utils.LISTENADDRESS)
-	for {
-		conn, err := listener.Accept()
-		if err != nil {
-			fmt.Println("unable to accept connection: ", err)
-			continue
-		}
-		go handleConnection(conn)
+	server, err := utils.NewTCPServer(utils.LISTENADDRESS, handleConnection01)
+	if err != nil {
+		fmt.Println("error starting server: ", err)
+		return
 	}
+	server.Start()
+	// Wait for a SIGINT or SIGTERM signal to gracefully shut down the server
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+	<-sigChan
+
+	fmt.Println("Shutting down server...")
+	server.Stop()
+	fmt.Println("Server stopped.")
 }
 
-func handleConnection(conn net.Conn) {
+func handleConnection01(conn net.Conn) {
 	defer conn.Close()
 	buf := bufio.NewReader(conn)
 	for {
