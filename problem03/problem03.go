@@ -1,10 +1,92 @@
 package problem03
 
 import (
+	"bufio"
 	"fmt"
+	"log"
 	"net"
+	"os"
+	"os/signal"
 	"protohackers/utils"
+	"regexp"
+	"strings"
+	"syscall"
 )
+
+type Session struct {
+	Username string
+	Conn     net.Conn
+	errc     chan error
+}
+
+type Message struct {
+	Sender  string
+	Content string
+}
+
+var Ingress chan Session
+var Egress chan string
+var Messages chan Message
+
+func Coordinator() {
+	validUsername := regexp.MustCompile(`^[[:alnum:]]{1,16}$`)
+
+	sessions := make(map[string]net.Conn)
+	for {
+		select {
+		case m := <-Messages:
+			msg := "[" + m.Sender + "] " + m.Content + "\n"
+			log.Print(msg)
+			for name, conn := range sessions {
+				if name == m.Sender {
+					continue
+				}
+
+				if _, err := conn.Write([]byte(msg)); err != nil {
+					log.Printf("%s (%v)", err, conn.RemoteAddr())
+				}
+			}
+		case u := <-Egress:
+			delete(sessions, u)
+
+			msg := "* " + u + " has left the room\n"
+			log.Print(msg)
+			for _, conn := range sessions {
+				if _, err := conn.Write([]byte(msg)); err != nil {
+					log.Printf("%s (%v)", err, conn.RemoteAddr())
+				}
+			}
+		case s := <-Ingress:
+			if _, exists := sessions[s.Username]; exists {
+				s.errc <- fmt.Errorf("requested username is taken: " + s.Username)
+				break
+			} else if match := validUsername.MatchString(s.Username); !match {
+				s.errc <- fmt.Errorf("invalid username: " + s.Username)
+				break
+			}
+
+			var users []string
+			msg := "* " + s.Username + " has entered the room\n"
+			log.Print(msg)
+			for name, conn := range sessions {
+				if _, err := conn.Write([]byte(msg)); err != nil {
+					log.Printf("%s (%v)", err, conn.RemoteAddr())
+				}
+
+				users = append(users, name)
+			}
+
+			sessions[s.Username] = s.Conn
+			s.errc <- nil
+
+			msg = "* The room contains: " + strings.Join(users, ", ") + "\n"
+			if _, err := s.Conn.Write([]byte(msg)); err != nil {
+				log.Printf("%s (%v)", err, s.Conn.RemoteAddr())
+			}
+
+		}
+	}
+}
 
 func Run() {
 	server, err := utils.NewTCPServer(utils.LISTENADDRESS, handleConnection)
@@ -12,8 +94,18 @@ func Run() {
 		fmt.Println("error starting server: ", err)
 		return
 	}
+	Ingress = make(chan Session)
+	Egress = make(chan string)
+	Messages = make(chan Message)
+	go Coordinator()
 	server.Start()
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+	<-sigChan
+
+	fmt.Println("Shutting down server...")
 	server.Stop()
+	fmt.Println("Server stopped.")
 }
 
 func handleConnection(conn net.Conn) {
@@ -22,7 +114,27 @@ func handleConnection(conn net.Conn) {
 	if _, err := conn.Write([]byte(msg)); err != nil {
 		fmt.Printf("Cannot send to client, error %v\n", err)
 	}
+	var username string
+	scanner := bufio.NewScanner(conn)
+	if scanner.Scan() {
+		username = scanner.Text()
+		errc := make(chan error)
+		Ingress <- Session{username, conn, errc}
+		if err := <-errc; err != nil {
+			log.Printf("%v", err)
+			return
+		}
+		defer func() {
+			Egress <- username
+		}()
+	} else {
+		log.Printf("no username provided")
+		return
+	}
 
+	for scanner.Scan() {
+		Messages <- Message{username, scanner.Text()}
+	}
 }
 
 /*

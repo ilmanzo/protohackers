@@ -51,7 +51,7 @@ func handleConnection01(conn net.Conn) {
 		response := verifyRequest(bytes)
 		resp, err := json.Marshal(response)
 		if err != nil {
-			fmt.Println("Error serializing json: ", err)
+			fmt.Println("Errore sucando json: ", err)
 			continue
 		}
 		resp = append(resp, '\n')
