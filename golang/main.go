@@ -10,6 +10,7 @@ import (
 	"protohackers/problem03"
 	"protohackers/problem04"
 	"protohackers/problem05"
+	"protohackers/problem06"
 )
 
 func main() {
@@ -20,6 +21,7 @@ func main() {
 		problem03.Run,
 		problem04.Run,
 		problem05.Run,
+		problem06.Run,
 	}
 	problem := flag.Int("problem", -1, "the problem to run")
 	flag.Parse()
